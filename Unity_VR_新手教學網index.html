@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unity VR 新手實戰手冊 · v2</title>
+  <meta name="description" content="Unity VR 開發新手單頁教學：介面、快捷鍵、父子物件、頂點吸附、腳本偵錯、物理碰撞、跨場景、XR 設定與 GitHub SOP。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0d13;
+      --bg-2:#0f1117;
+      --surface:#141823;
+      --surface-2:#1a1f2c;
+      --surface-3:#222838;
+      --text:#eef3ff;
+      --muted:#9aa4ba;
+      --muted-2:#6c7689;
+      --line:rgba(255,255,255,.08);
+      --line-strong:rgba(255,255,255,.16);
+      --accent:#5eead4;
+      --accent-soft:rgba(94,234,212,.14);
+      --accent-deep:#2dd4bf;
+      --danger:#fb7185;
+      --warning:#fbbf24;
+      --tip:#86efac;
+      --info:#a78bfa;
+      --code-bg:#0d1019;
+      --code-top:#161b27;
+      --pink:#f472b6;
+      --blue:#7dd3fc;
+      --green:#86efac;
+      --orange:#fdba74;
+      --num:#fca5a5;
+      --sidebar:248px;
+      --radius-lg:22px;
+      --radius-md:14px;
+      --radius-sm:10px;
+      --shadow-card:0 24px 60px -28px rgba(0,0,0,.55);
+      --ease:cubic-bezier(.16,1,.3,1);
+      --font:"Geist","Noto Sans TC","Microsoft JhengHei",system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+      --mono:"Geist Mono","JetBrains Mono","SFMono-Regular",Consolas,Menlo,monospace;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;scroll-padding-top:32px}
+    body{
+      margin:0;min-height:100dvh;
+      background:
+        radial-gradient(1200px 600px at 12% -8%, rgba(94,234,212,.08), transparent 60%),
+        radial-gradient(900px 500px at 95% 8%, rgba(167,139,250,.07), transparent 60%),
+        linear-gradient(180deg,#0b0d13 0%, #0f1117 100%);
+      color:var(--text);
+      font-family:var(--font);
+      font-feature-settings:"ss01","ss02","cv11";
+      line-height:1.7;
+      overflow-x:hidden;
+      -webkit-font-smoothing:antialiased;
+    }
+    body::before{
+      content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);
+      background-size:56px 56px;
+      mask-image:linear-gradient(to bottom,rgba(0,0,0,.85),transparent 78%);
+    }
+    a{color:inherit;text-decoration:none}
+    code{font-family:var(--mono)}
+
+    /* Top scroll progress */
+    .progress{
+      position:fixed;left:0;top:0;height:2px;width:0%;
+      background:linear-gradient(90deg,var(--accent),var(--info));
+      z-index:60;transition:width .12s linear;
+      box-shadow:0 0 12px rgba(94,234,212,.45);
+    }
+
+    /* Skip link */
+    .skip-link{
+      position:fixed;left:14px;top:14px;transform:translateY(-160%);
+      z-index:80;padding:10px 14px;border-radius:999px;
+      background:var(--accent);color:#06201d;font-weight:800;
+      transition:transform .24s var(--ease);
+    }
+    .skip-link:focus{transform:translateY(0)}
+
+    /* Mobile header */
+    .topbar{
+      display:none;position:sticky;top:0;z-index:40;
+      align-items:center;justify-content:space-between;
+      padding:10px 14px;
+      background:rgba(11,13,19,.85);backdrop-filter:blur(14px);
+      border-bottom:1px solid var(--line);
+    }
+    .topbar h1{margin:0;font-size:14px;letter-spacing:-.01em}
+    .menu-btn{
+      width:40px;height:40px;display:grid;place-items:center;
+      border:1px solid var(--line);border-radius:12px;
+      background:var(--surface);color:var(--text);cursor:pointer;
+    }
+    .menu-btn svg{width:18px;height:18px}
+
+    /* Sidebar */
+    .sidebar{
+      position:fixed;inset:0 auto 0 0;width:var(--sidebar);height:100dvh;
+      padding:22px 14px 18px;
+      border-right:1px solid var(--line);
+      background:rgba(11,13,19,.86);backdrop-filter:blur(18px);
+      display:flex;flex-direction:column;
+      z-index:30;
+    }
+    .brand{padding:6px 8px 18px;border-bottom:1px solid var(--line);margin-bottom:14px}
+    .brand-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+    .brand-mark{
+      width:38px;height:38px;display:grid;place-items:center;
+      border:1px solid rgba(94,234,212,.35);border-radius:11px;
+      background:linear-gradient(135deg,rgba(94,234,212,.18),rgba(255,255,255,.04)),var(--surface);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+      color:var(--accent);font-weight:900;letter-spacing:-.06em;font-size:13px;
+    }
+    .brand-text strong{display:block;font-size:14px;letter-spacing:-.015em;line-height:1.2}
+    .brand-text small{display:block;color:var(--muted-2);font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+
+    .search{
+      position:relative;margin:4px 2px 10px;
+    }
+    .search input{
+      width:100%;height:36px;padding:0 12px 0 34px;
+      border:1px solid var(--line);border-radius:10px;
+      background:var(--surface);color:var(--text);
+      font:500 13px/1 var(--font);
+      transition:border-color .2s var(--ease), background .2s var(--ease);
+    }
+    .search input:focus{outline:none;border-color:rgba(94,234,212,.45);background:var(--surface-2)}
+    .search svg{position:absolute;left:10px;top:10px;width:16px;height:16px;color:var(--muted-2)}
+    .search kbd{
+      position:absolute;right:8px;top:8px;
+      font-family:var(--mono);font-size:10px;
+      padding:3px 6px;border:1px solid var(--line);border-radius:6px;
+      background:var(--surface-2);color:var(--muted);
+    }
+
+    .nav-wrap{flex:1;overflow-y:auto;margin:0 -4px;padding:0 4px}
+    .nav-wrap::-webkit-scrollbar{width:6px}
+    .nav-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:3px}
+
+    .nav{position:relative;display:grid;gap:3px;padding:2px 0 14px}
+    .nav-indicator{
+      position:absolute;left:0;width:3px;height:42px;
+      background:linear-gradient(180deg,var(--accent),var(--accent-deep));
+      border-radius:0 3px 3px 0;
+      box-shadow:0 0 12px rgba(94,234,212,.5);
+      transition:transform .35s var(--ease), opacity .25s var(--ease);
+      opacity:0;will-change:transform;
+    }
+    .nav a{
+      position:relative;display:grid;
+      grid-template-columns:26px 1fr auto;align-items:center;gap:10px;
+      min-height:42px;padding:8px 10px;
+      border:1px solid transparent;border-radius:11px;
+      color:var(--muted);font-size:13px;line-height:1.25;
+      transition:color .2s var(--ease),background .2s var(--ease),border-color .2s var(--ease);
+    }
+    .nav a:hover{color:var(--text);background:rgba(255,255,255,.045);border-color:rgba(255,255,255,.05)}
+    .nav a.active{color:#f6fffd;background:linear-gradient(135deg,rgba(94,234,212,.13),rgba(255,255,255,.03));border-color:rgba(94,234,212,.22)}
+    .nav-number{
+      display:grid;place-items:center;width:24px;height:24px;border-radius:7px;
+      background:rgba(255,255,255,.05);color:var(--muted);
+      font-family:var(--mono);font-size:10.5px;font-weight:700;
+    }
+    .nav a.active .nav-number{background:var(--accent-soft);color:var(--accent)}
+    .nav-time{font-family:var(--mono);font-size:10.5px;color:var(--muted-2)}
+
+    .sidebar-footer{
+      padding:12px 8px 4px;margin-top:6px;
+      border-top:1px solid var(--line);
+      display:flex;align-items:center;justify-content:space-between;
+      font-family:var(--mono);font-size:10.5px;color:var(--muted-2);
+      letter-spacing:.06em;
+    }
+    .sidebar-footer .dot-live{
+      display:inline-block;width:7px;height:7px;border-radius:50%;
+      background:var(--accent);box-shadow:0 0 0 4px rgba(94,234,212,.18);
+      margin-right:6px;animation:pulse 2.4s ease-in-out infinite;
+    }
+
+    /* Backdrop for mobile */
+    .backdrop{
+      display:none;position:fixed;inset:0;z-index:25;
+      background:rgba(5,7,12,.55);backdrop-filter:blur(2px);
+      opacity:0;transition:opacity .25s var(--ease);
+    }
+    .backdrop.open{display:block;opacity:1}
+
+    /* Main */
+    .main{
+      position:relative;z-index:1;
+      margin-left:var(--sidebar);
+      padding:36px clamp(22px,4vw,68px) 80px;
+      max-width:1480px;
+    }
+
+    /* Hero */
+    .hero{
+      position:relative;min-height:430px;
+      display:grid;grid-template-columns:minmax(0,1.28fr) minmax(280px,.72fr);
+      gap:clamp(28px,4vw,56px);align-items:center;overflow:hidden;
+      padding:clamp(30px,5vw,58px);
+      border:1px solid var(--line);border-radius:30px;
+      background:
+        radial-gradient(circle at 85% 18%, rgba(94,234,212,.18), transparent 22rem),
+        linear-gradient(135deg,rgba(20,24,35,.96),rgba(20,24,35,.74));
+      box-shadow:var(--shadow-card);
+    }
+    .hero::before{
+      content:"";position:absolute;right:-100px;top:-130px;
+      width:420px;height:420px;border:1px solid rgba(255,255,255,.09);
+      border-radius:50%;
+      background:repeating-linear-gradient(90deg,rgba(255,255,255,.04) 0 1px,transparent 1px 19px);
+      transform:rotate(18deg);
+    }
+    .hero-copy{position:relative;z-index:1}
+    .eyebrow{
+      display:inline-flex;align-items:center;gap:9px;margin-bottom:22px;
+      padding:6px 12px;border:1px solid rgba(94,234,212,.26);border-radius:999px;
+      background:rgba(94,234,212,.07);color:var(--accent);
+      font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    }
+    .eyebrow::before{
+      content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);
+      box-shadow:0 0 0 5px rgba(94,234,212,.14);animation:pulse 2.4s ease-in-out infinite;
+    }
+    .hero h2{
+      margin:0;max-width:820px;
+      font-size:clamp(36px,5.6vw,68px);line-height:.98;letter-spacing:-.055em;font-weight:800;
+    }
+    .hero h2 em{font-style:normal;color:var(--accent);background:linear-gradient(120deg,var(--accent),#a5f3fc);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+    .hero p.lead{
+      max-width:680px;margin:22px 0 0;color:#c5cdde;
+      font-size:clamp(16px,1.6vw,18.5px);line-height:1.65;
+    }
+    .hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+    .button{
+      display:inline-flex;align-items:center;gap:8px;
+      min-height:44px;padding:0 18px;
+      border:1px solid rgba(255,255,255,.12);border-radius:999px;
+      background:rgba(255,255,255,.06);color:var(--text);
+      font:700 14px/1 var(--font);cursor:pointer;
+      transition:transform .2s var(--ease),background .2s var(--ease),border-color .2s var(--ease);
+    }
+    .button:hover{transform:translateY(-2px);background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18)}
+    .button:active{transform:translateY(0) scale(.98)}
+    .button.primary{
+      border-color:rgba(94,234,212,.5);background:var(--accent);color:#06201d;
+      box-shadow:0 14px 30px -10px rgba(45,212,191,.45);
+    }
+    .button.primary:hover{background:var(--accent-deep)}
+    .button svg{width:14px;height:14px}
+
+    .hero-meta{
+      display:flex;flex-wrap:wrap;gap:18px;margin-top:24px;
+      font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.06em;
+    }
+    .hero-meta span{display:inline-flex;align-items:center;gap:6px}
+    .hero-meta .swatch{width:8px;height:8px;border-radius:2px}
+
+    .hero-panel{position:relative;z-index:1;align-self:stretch;display:grid;align-content:end;gap:14px;min-height:280px}
+    .status-card{
+      padding:18px;border:1px solid rgba(255,255,255,.1);border-radius:20px;
+      background:rgba(11,13,19,.55);backdrop-filter:blur(14px);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+      animation:floatIn 820ms var(--ease) both;
+    }
+    .status-card:nth-child(2){margin-left:24px;animation-delay:90ms}
+    .status-card:nth-child(3){margin-left:-16px;animation-delay:180ms}
+    .status-card small{display:block;margin-bottom:5px;color:var(--accent);font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase}
+    .status-card strong{display:block;font-size:15.5px;line-height:1.3;letter-spacing:-.015em}
+    .status-card span{display:block;margin-top:6px;color:var(--muted);font-size:13px}
+
+    /* Quick start strip */
+    .quickstart{
+      margin-top:24px;padding:22px clamp(22px,3vw,30px);
+      display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:center;
+      border:1px solid var(--line);border-radius:18px;
+      background:linear-gradient(135deg,rgba(167,139,250,.07),rgba(94,234,212,.04));
+    }
+    .quickstart .qs-title{font-family:var(--mono);font-size:11px;color:var(--info);letter-spacing:.14em;text-transform:uppercase}
+    .quickstart .qs-title strong{display:block;color:var(--text);font-family:var(--font);font-size:16px;letter-spacing:-.01em;margin-top:4px;text-transform:none}
+    .quickstart ol{
+      margin:0;padding:0;list-style:none;
+      display:flex;flex-wrap:wrap;gap:10px 14px;
+    }
+    .quickstart li{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:6px 12px;border:1px solid var(--line);border-radius:999px;
+      background:rgba(255,255,255,.03);font-size:13px;color:var(--text);
+    }
+    .quickstart li b{
+      width:20px;height:20px;display:grid;place-items:center;
+      border-radius:50%;background:var(--accent);color:#06201d;
+      font-family:var(--mono);font-size:11px;font-weight:800;
+    }
+
+    /* Section */
+    .section{padding-top:36px;scroll-margin-top:24px}
+    .section-card{
+      margin-top:18px;padding:clamp(22px,3vw,36px);
+      border:1px solid var(--line);border-radius:var(--radius-lg);
+      background:rgba(20,24,35,.85);
+      box-shadow:0 18px 50px -24px rgba(0,0,0,.4);
+      animation:reveal .7s var(--ease) both;
+      animation-delay:calc(var(--index,0) * 50ms);
+    }
+    .section-header{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:start;margin-bottom:22px}
+    .kicker{margin:0 0 7px;color:var(--accent);font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+    .section h2{margin:0;font-size:clamp(26px,3.1vw,40px);line-height:1.1;letter-spacing:-.04em;font-weight:800}
+    .desc{max-width:780px;margin:12px 0 0;color:var(--muted);font-size:15.5px}
+    .section-meta{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+    .pill{
+      display:inline-flex;align-items:center;min-height:30px;padding:0 12px;
+      border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.04);
+      color:var(--muted);font-family:var(--mono);font-size:11px;font-weight:600;white-space:nowrap;
+    }
+    .reading-time{font-family:var(--mono);font-size:10.5px;color:var(--muted-2);letter-spacing:.06em}
+
+    /* Grids */
+    .grid{display:grid;gap:14px}
+    .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+
+    .mini-card{
+      padding:18px;border:1px solid var(--line);border-radius:var(--radius-md);
+      background:var(--surface-2);transition:border-color .2s var(--ease),transform .2s var(--ease);
+    }
+    .mini-card:hover{border-color:rgba(94,234,212,.22);transform:translateY(-2px)}
+    .mini-card h3{margin:0 0 8px;font-size:17px;line-height:1.28;letter-spacing:-.015em;font-weight:700}
+    .mini-card p{margin:0;color:var(--muted);font-size:13.5px}
+    .mini-card strong{color:var(--text)}
+
+    .tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+    .tag{
+      display:inline-flex;align-items:center;min-height:24px;padding:0 9px;
+      border:1px solid rgba(94,234,212,.2);border-radius:999px;
+      background:rgba(94,234,212,.06);color:#cffff7;
+      font-family:var(--mono);font-size:10.5px;font-weight:600;
+    }
+
+    /* Callouts */
+    .callout{
+      position:relative;margin:18px 0;padding:16px 18px 16px 50px;
+      border:1px solid var(--line);border-radius:var(--radius-md);background:var(--surface-2);
+    }
+    .callout::before{
+      content:"";position:absolute;left:18px;top:20px;width:16px;height:16px;border-radius:50%;
+      background:currentColor;box-shadow:0 0 0 5px color-mix(in srgb,currentColor 16%,transparent);
+    }
+    .callout h4{margin:0 0 4px;font-size:14.5px;letter-spacing:-.01em;font-weight:700}
+    .callout p{margin:0;color:#c9d2e3;font-size:13.5px}
+    .callout.danger{color:var(--danger);border-color:rgba(251,113,133,.32);background:rgba(251,113,133,.08)}
+    .callout.warning{color:var(--warning);border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.07)}
+    .callout.tip{color:var(--tip);border-color:rgba(134,239,172,.28);background:rgba(134,239,172,.07)}
+    .callout.info{color:var(--info);border-color:rgba(167,139,250,.32);background:rgba(167,139,250,.08)}
+    .callout h4,.callout p,.callout code{color:inherit}
+    .callout p{color:#cbd5e5}
+
+    /* Tables */
+    .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--surface-2)}
+    table{width:100%;min-width:680px;border-collapse:collapse;color:var(--text);font-size:13.5px}
+    th,td{padding:13px 16px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+    th{background:rgba(255,255,255,.035);color:#dce7ff;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+    tr:last-child td{border-bottom:0}
+    tbody tr{transition:background .15s var(--ease)}
+    tbody tr:hover{background:rgba(255,255,255,.025)}
+
+    td code,p code,li code,summary code{
+      display:inline-flex;align-items:center;min-height:22px;padding:0 6px;
+      border:1px solid rgba(255,255,255,.08);border-radius:6px;
+      background:rgba(255,255,255,.05);color:#d5fbf5;
+      font-family:var(--mono);font-size:.86em;
+    }
+
+    /* Key grid */
+    .key-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+    .key-card{
+      padding:16px 10px;border:1px solid var(--line);border-radius:var(--radius-md);
+      background:var(--surface-2);text-align:center;
+      transition:transform .2s var(--ease),border-color .2s var(--ease);
+    }
+    .key-card:hover{transform:translateY(-3px);border-color:rgba(94,234,212,.28)}
+    .key{
+      display:inline-grid;place-items:center;min-width:46px;height:42px;margin-bottom:10px;
+      border:1px solid rgba(255,255,255,.14);border-bottom-color:rgba(255,255,255,.3);
+      border-radius:10px;background:linear-gradient(180deg,#2c3245,#1a1f2c);
+      box-shadow:inset 0 -3px 0 rgba(0,0,0,.3);
+      color:#fff;font-family:var(--mono);font-size:16px;font-weight:800;
+    }
+    .key-card p{margin:0;color:var(--muted);font-size:12.5px;line-height:1.45}
+
+    /* Steps */
+    .step-list{display:grid;gap:12px;counter-reset:step}
+    .step{
+      position:relative;min-height:84px;padding:18px 18px 18px 76px;
+      border:1px solid var(--line);border-radius:var(--radius-md);
+      background:var(--surface-2);counter-increment:step;
+      transition:border-color .2s var(--ease);
+    }
+    .step:hover{border-color:rgba(94,234,212,.2)}
+    .step::before{
+      content:counter(step,decimal-leading-zero);
+      position:absolute;left:18px;top:18px;width:42px;height:42px;
+      display:grid;place-items:center;border-radius:12px;
+      background:linear-gradient(135deg,var(--accent),var(--accent-deep));
+      color:#06201d;font-family:var(--mono);font-weight:800;font-size:13px;
+      box-shadow:0 10px 22px -8px rgba(45,212,191,.5);
+    }
+    .step h3{margin:0 0 4px;font-size:16px;letter-spacing:-.015em;font-weight:700}
+    .step p{margin:0;color:var(--muted);font-size:13.5px}
+
+    /* Code window */
+    .code-window{
+      overflow:hidden;margin:18px 0;border:1px solid rgba(255,255,255,.09);
+      border-radius:var(--radius-md);background:var(--code-bg);
+      box-shadow:0 18px 40px -18px rgba(0,0,0,.5);
+    }
+    .code-header{
+      display:grid;grid-template-columns:70px 1fr auto;align-items:center;gap:12px;
+      padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.07);
+      background:var(--code-top);
+    }
+    .dots{display:flex;gap:6px}
+    .dot{width:11px;height:11px;border-radius:50%}
+    .dot.red{background:#ff5f57}
+    .dot.yellow{background:#ffbd2e}
+    .dot.green{background:#28c840}
+    .filename{color:#bdc7da;font-family:var(--mono);font-size:12px;text-align:center}
+    .code-actions{display:flex;align-items:center;gap:8px}
+    .code-badge{color:var(--muted-2);font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.08em}
+    .copy-btn{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:5px 9px;border:1px solid var(--line);border-radius:7px;
+      background:rgba(255,255,255,.04);color:var(--muted);
+      font:600 11px/1 var(--mono);cursor:pointer;
+      transition:color .2s var(--ease),border-color .2s var(--ease),background .2s var(--ease);
+    }
+    .copy-btn:hover{color:var(--text);border-color:rgba(94,234,212,.3);background:rgba(94,234,212,.08)}
+    .copy-btn.ok{color:var(--accent);border-color:rgba(94,234,212,.4)}
+    .copy-btn svg{width:12px;height:12px}
+    pre{margin:0;padding:18px;overflow-x:auto;color:#d7deee;font-family:var(--mono);font-size:13px;line-height:1.7;tab-size:2}
+    .kw{color:var(--pink)}.type{color:var(--blue)}.fn{color:var(--green)}.str{color:var(--orange)}.num{color:var(--num)}.comment{color:#6c7689;font-style:italic}
+
+    /* FAQ */
+    .faq-list{display:grid;gap:10px}
+    details{
+      overflow:hidden;border:1px solid var(--line);border-radius:var(--radius-md);
+      background:var(--surface-2);
+      transition:border-color .2s var(--ease),background .2s var(--ease);
+    }
+    details[open]{border-color:rgba(94,234,212,.24);background:#1c2230}
+    summary{
+      position:relative;cursor:pointer;padding:15px 52px 15px 18px;
+      color:var(--text);font-weight:700;list-style:none;letter-spacing:-.005em;font-size:14.5px;
+    }
+    summary::-webkit-details-marker{display:none}
+    summary::after{
+      content:"";position:absolute;right:18px;top:50%;width:14px;height:14px;
+      transform:translateY(-50%) rotate(0);transition:transform .25s var(--ease);
+      background:
+        linear-gradient(var(--accent),var(--accent)) center/14px 2px no-repeat,
+        linear-gradient(var(--accent),var(--accent)) center/2px 14px no-repeat;
+    }
+    details[open] summary::after{transform:translateY(-50%) rotate(45deg);background:linear-gradient(var(--accent),var(--accent)) center/14px 2px no-repeat}
+    details > div{padding:0 18px 18px;color:var(--muted);font-size:13.5px}
+    details > div p{margin:0 0 8px}
+    details > div p:last-child{margin-bottom:0}
+
+    /* Glossary */
+    .glossary{
+      display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
+    }
+    .glossary div{
+      padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);
+      font-size:13px;color:var(--muted);
+    }
+    .glossary div b{color:var(--text);font-weight:700;display:inline-block;margin-right:8px;font-family:var(--mono);font-size:12px;letter-spacing:.04em}
+
+    /* Floating buttons */
+    .fab{
+      position:fixed;right:22px;bottom:22px;z-index:35;
+      display:flex;flex-direction:column;gap:10px;
+      opacity:0;transform:translateY(12px);pointer-events:none;
+      transition:opacity .25s var(--ease),transform .25s var(--ease);
+    }
+    .fab.show{opacity:1;transform:translateY(0);pointer-events:auto}
+    .fab button{
+      width:44px;height:44px;display:grid;place-items:center;
+      border:1px solid var(--line);border-radius:14px;
+      background:var(--surface);color:var(--text);cursor:pointer;
+      box-shadow:0 14px 30px -10px rgba(0,0,0,.5);
+      transition:transform .18s var(--ease),background .18s var(--ease),border-color .18s var(--ease);
+    }
+    .fab button:hover{transform:translateY(-2px);background:var(--surface-2);border-color:rgba(94,234,212,.32)}
+    .fab svg{width:18px;height:18px}
+
+    /* Footer */
+    .footer{
+      margin-top:40px;padding:26px;
+      border:1px solid var(--line);border-radius:var(--radius-lg);
+      background:rgba(20,24,35,.7);color:var(--muted);text-align:center;font-size:13.5px;
+    }
+    .footer strong{color:var(--text);display:block;margin-bottom:4px;font-size:15px;letter-spacing:-.01em}
+    .footer .meta{margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--muted-2);letter-spacing:.08em}
+
+    /* Toast */
+    .toast{
+      position:fixed;left:50%;bottom:30px;transform:translate(-50%,80px);
+      padding:10px 16px;border:1px solid rgba(94,234,212,.4);border-radius:999px;
+      background:rgba(20,24,35,.95);backdrop-filter:blur(14px);
+      color:var(--accent);font-family:var(--mono);font-size:12px;
+      z-index:100;opacity:0;transition:transform .3s var(--ease),opacity .3s var(--ease);
+    }
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+
+    @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.7);opacity:.55}}
+    @keyframes floatIn{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+    @keyframes reveal{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+    @media (prefers-reduced-motion:reduce){
+      *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;scroll-behavior:auto !important;transition-duration:.001ms !important}
+    }
+
+    @media (max-width:1080px){
+      .hero{grid-template-columns:1fr}
+      .hero-panel{grid-template-columns:repeat(3,minmax(0,1fr));min-height:0}
+      .status-card,.status-card:nth-child(2),.status-card:nth-child(3){margin-left:0}
+      .grid-3,.key-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .quickstart{grid-template-columns:1fr}
+    }
+
+    @media (max-width:820px){
+      :root{--sidebar:0px}
+      .topbar{display:flex}
+      .sidebar{
+        transform:translateX(-100%);
+        width:280px;
+        transition:transform .3s var(--ease);
+      }
+      .sidebar.open{transform:translateX(0)}
+      .main{margin-left:0;padding:18px 14px 56px}
+      .hero{padding:26px 20px;border-radius:22px;min-height:0}
+      .hero h2{font-size:36px}
+      .hero-panel,.grid-2,.grid-3,.key-grid,.glossary{grid-template-columns:1fr}
+      .section-header{grid-template-columns:1fr}
+      .section-meta{flex-direction:row;align-items:center;gap:10px}
+      .section-card{padding:20px}
+      .code-header{grid-template-columns:60px 1fr auto;gap:8px}
+      .code-badge{display:none}
+      .fab{right:14px;bottom:14px}
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" id="progress" aria-hidden="true"></div>
+  <a class="skip-link" href="#content">跳到主要內容</a>
+
+  <header class="topbar">
+    <h1>Unity VR 新手實戰</h1>
+    <button class="menu-btn" id="menuBtn" aria-label="開啟章節選單">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </header>
+
+  <div class="backdrop" id="backdrop"></div>
+
+  <aside class="sidebar" id="sidebar" aria-label="網站章節導覽">
+    <div class="brand">
+      <div class="brand-row">
+        <div class="brand-mark" aria-hidden="true">VR</div>
+        <div class="brand-text">
+          <strong>Unity VR 新手實戰</strong>
+          <small>v2 · 單頁手冊</small>
+        </div>
+      </div>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="searchInput" type="search" placeholder="搜尋章節…" aria-label="搜尋章節">
+        <kbd>/</kbd>
+      </div>
+    </div>
+
+    <div class="nav-wrap">
+      <nav class="nav" id="nav" aria-label="章節列表">
+        <span class="nav-indicator" id="navIndicator" aria-hidden="true"></span>
+        <a href="#hero" class="active" data-time="1 min"><span class="nav-number">00</span><span class="nav-label">總覽</span><span class="nav-time">1m</span></a>
+        <a href="#interface" data-time="3 min"><span class="nav-number">01</span><span class="nav-label">Unity 核心介面</span><span class="nav-time">3m</span></a>
+        <a href="#shortcuts" data-time="2 min"><span class="nav-number">02</span><span class="nav-label">快捷鍵總覽</span><span class="nav-time">2m</span></a>
+        <a href="#operations" data-time="4 min"><span class="nav-number">03</span><span class="nav-label">基礎操作</span><span class="nav-time">4m</span></a>
+        <a href="#debugging" data-time="5 min"><span class="nav-number">04</span><span class="nav-label">腳本偵錯</span><span class="nav-time">5m</span></a>
+        <a href="#physics" data-time="3 min"><span class="nav-number">05</span><span class="nav-label">物理碰撞</span><span class="nav-time">3m</span></a>
+        <a href="#scenes" data-time="3 min"><span class="nav-number">06</span><span class="nav-label">跨場景管理</span><span class="nav-time">3m</span></a>
+        <a href="#xr" data-time="4 min"><span class="nav-number">07</span><span class="nav-label">XR 設定</span><span class="nav-time">4m</span></a>
+        <a href="#github" data-time="4 min"><span class="nav-number">08</span><span class="nav-label">GitHub SOP</span><span class="nav-time">4m</span></a>
+        <a href="#glossary" data-time="2 min"><span class="nav-number">09</span><span class="nav-label">名詞速查</span><span class="nav-time">2m</span></a>
+        <a href="#faq" data-time="5 min"><span class="nav-number">10</span><span class="nav-label">FAQ</span><span class="nav-time">5m</span></a>
+      </nav>
+    </div>
+
+    <div class="sidebar-footer">
+      <span><span class="dot-live"></span>READING</span>
+      <span id="readPercent">0%</span>
+    </div>
+  </aside>
+
+  <main class="main" id="content">
+    <header class="hero section" id="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">Unity VR Beginner Manual · v2</div>
+        <h2>從介面到 <em>VR 實機測試</em>，一頁讀完關鍵流程。</h2>
+        <p class="lead">
+          這是一份給 Unity 初學者的 VR 開發單頁手冊。聚焦在新手實作時最容易卡住的介面、快捷鍵、父子物件、頂點吸附、腳本偵錯、碰撞、跨場景保留、XR 套件設定，以及 GitHub 團隊交接 SOP。每章 2–5 分鐘讀完，按下 <code>1–9</code> 鍵可直接跳轉。
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="#interface">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            開始閱讀
+          </a>
+          <a class="button" href="#faq">查看 FAQ</a>
+          <a class="button" href="#glossary">名詞速查</a>
+        </div>
+        <div class="hero-meta">
+          <span><span class="swatch" style="background:var(--accent)"></span>10 章節</span>
+          <span><span class="swatch" style="background:var(--info)"></span>約 35 分鐘</span>
+          <span><span class="swatch" style="background:var(--orange)"></span>2 段範例程式</span>
+          <span><span class="swatch" style="background:var(--tip)"></span>12 題 FAQ</span>
+        </div>
+      </div>
+
+      <div class="hero-panel" aria-label="學習重點">
+        <div class="status-card">
+          <small>Focus 01</small>
+          <strong>先掌握 Unity 視窗邏輯</strong>
+          <span>Hierarchy、Scene、Inspector、Project、Console 五大視窗的分工。</span>
+        </div>
+        <div class="status-card">
+          <small>Focus 02</small>
+          <strong>用正確方式做 VR 互動</strong>
+          <span>距離偵測、Collider、Trigger 與玩家控制器跨場景保留。</span>
+        </div>
+        <div class="status-card">
+          <small>Focus 03</small>
+          <strong>把專案交接做穩</strong>
+          <span>雙重存檔、關閉 Unity、Commit 與 Push 的標準流程。</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="quickstart" aria-label="快速啟動清單">
+      <div class="qs-title">Quick Start
+        <strong>開新 VR 專案先做這 5 件事</strong>
+      </div>
+      <ol>
+        <li><b>1</b>建立 3D / URP 專案</li>
+        <li><b>2</b>裝 XR Plugin Management</li>
+        <li><b>3</b>勾選目標平台 Loader</li>
+        <li><b>4</b>放入 XR Origin</li>
+        <li><b>5</b>設定 .gitignore 與初始 Commit</li>
+      </ol>
+      <a class="button" href="#xr">看 XR 細節</a>
+    </section>
+
+    <section class="section" id="interface">
+      <div class="section-card" style="--index:1">
+        <div class="section-header">
+          <div>
+            <p class="kicker">Chapter 01</p>
+            <h2>Unity 核心介面</h2>
+            <p class="desc">初次打開 Unity，先熟悉五大核心視窗。大部分新手問題都能用「選物件 → 看屬性 → 查錯誤」這條流程定位。</p>
+          </div>
+          <div class="section-meta">
+            <span class="pill">Workspace Layout</span>
+            <span class="reading-time">3 MIN READ</span>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>介面名稱</th><th>主要功能</th><th>新手注意</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Hierarchy 階層</strong></td><td>顯示目前場景中的所有物件，例如玩家、燈光、模型、Canvas、空物件。</td><td>藍色方塊通常代表 Prefab。父子物件縮排會影響移動與管理方式。</td></tr>
+              <tr><td><strong>Scene 場景</strong></td><td>編輯器視覺化視窗，用於擺放、旋轉、縮放與檢查模型位置。</td><td>常用 <code>Q</code>、<code>W</code>、<code>E</code>、<code>R</code> 切換工具。</td></tr>
+              <tr><td><strong>Inspector 屬性</strong></td><td>設定所選物件的 Transform、Tag、Layer、Collider、Script 與各種 Component。</td><td>腳本掛載、欄位指定、Is Trigger 開關都在這裡處理。</td></tr>
+              <tr><td><strong>Project 專案</strong></td><td>管理所有原始檔案：模型、貼圖、材質、音效、腳本與 Scene。</td><td>像檔案總管，但 Unity 專案資料夾不要在系統檔案總管內亂搬。</td></tr>
+              <tr><td><strong>Console 主控台</strong></td><td>顯示程式錯誤、警告、Debug.Log 訊息，是偵錯核心。</td><td>先解第一個紅色錯誤，其他錯誤常會連帶消失。</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="grid grid-3" style="margin-top:14px">
+          <div class="mini-card"><h3>Hierarchy 看結構</h3><p>確認物件是否存在、父子關係是否正確、玩家或 Canvas 是否被誤刪。</p></div>
+          <div class="mini-card"><h3>Inspector 改設定</h3><p>Transform、Collider、Tag、Layer、腳本欄位與 Component 都在這裡調整。</p></div>
+          <div class="mini-card"><h3>Console 找錯誤</h3><p>功能失效時先看 Console。錯誤訊息比畫面現象更接近問題根源。</p></div>
+        </div>
+
+        <div class="callout info">
+          <h4>新手工作節奏</h4>
+          <p>選物件 → 看 Inspector → 查 Console → 回 Scene 調整。這四步是 Unity 初學者最重要的排錯節奏。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="shortcuts">
+      <div class="section-card" style="--index:2">
+        <div class="section-header">
+          <div>
+            <p class="kicker">Chapter 02</p>
+            <h2>快捷鍵總覽</h2>
+            <p class="desc">快捷鍵會直接影響 Unity 操作速度。先把工具鍵練熟，再熟悉儲存、複製、復原與聚焦。</p>
+          </div>
+          <div class="section-meta">
+            <span class="pill">Tools and Hotkeys</span>
+            <span class="reading-time">2 MIN READ</span>
+          </div>
+        </div>
+
+        <div class="key-grid">
+          <div class="key-card"><div class="key">Q</div><p>手型工具<br>拖曳視角</p></div>
+          <div class="key-card"><div class="key">W</div><p>移動工具<br>調整位置</p></div>
+          <div class="key-card"><div class="key">E</div><p>旋轉工具<br>調整角度</p></div>
+          <div class="key-card"><div class="key">R</div><p>縮放工具<br>調整大小</p></div>
+          <div class="key-card"><div class="key">T</div><p>Rect 工具<br>調整 UI</p></div>
+          <div class="key-card"><div class="key">V</div><p>頂點吸附<br>精準對齊</p></div>
+        </div>
+
+        <div class="table-wrap" style="margin-top:16px">
+          <table>
+            <thead><tr><th>快捷鍵</th><th>功能</th><th>使用時機</th></tr></thead>
+            <tbody>
+              <tr><td><code>Ctrl + S</code> / <code>Cmd + S</code></td><td>儲存目前場景</td><td>重要擺放、腳本掛載、Prefab 調整完都要儲存。</td></tr>
+              <tr><td><code>Ctrl + D</code> / <code>Cmd + D</code></td><td>複製物件</td><td>快速複製模型、牆壁、UI 元素或測試物件。</td></tr>
+              <tr><td><code>Ctrl + Z</code> / <code>Cmd + Z</code></td><td>復原</td><td>誤刪、誤移動、誤縮放時立即復原。</td></tr>
+              <tr><td><code>F</code></td><td>聚焦選取物件</td><td>Scene 找不到物件時，選 Hierarchy 物件後按 F。</td></tr>
+              <tr><td><code>Alt + 滑鼠左鍵</code></td><td>繞物件旋轉視角</td><td>檢查模型四周、牆面、地板接縫與 VR 空間配置。</td></tr>
+              <tr><td><code>滑鼠右鍵 + WASD</code></td><td>Scene 飛行視角</td><td>像第一人稱在大型場景中巡視。</td></tr>
+              <tr><td><code>Ctrl + Shift + F</code></td><td>對齊到 Scene 視角</td><td>把選取物件移到目前 Scene 視角的位置與方向。</td></tr>
+              <tr><td><code>Ctrl + P</code></td><td>進入 / 離開 Play Mode</td><td>避免在 Play Mode 修改物件，離開後變更會被還原。</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout tip">
+          <h4>練習建議</h4>
+          <p>每天開專案先用 Q、W、E、R、F 操作幾分鐘。熟悉後場景擺放速度會明顯提高。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="operations">
+      <div class="section-card" style="--index:3">
+        <div class="section-header">
+          <div>
+            <p class="kicker">Chapter 03</p>
+            <h2>基礎操作：父子物件與頂點吸附</h2>
+            <p class="desc">VR 場景常有大量模型。父子物件用來管理整組物件，頂點吸附用來精準對齊地板、牆面與場景邊界。</p>
+          </div>
+          <div class="section-meta">
+            <span class="pill">Parenting and Snapping</span>
+            <span class="reading-time">4 MIN READ</span>
+          </div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="mini-card">
+            <h3>父子物件概念</h3>
+            <p>當你需要同時移動上百個物件，例如一整個公園或展場，可以建立 <strong>Empty Object</strong> 當父容器。移動父物件時，底下子物件會跟著移動。</p>
+          </div>
+          <div class="mini-card">
+            <h3>適合使用時機</h3>
+            <p>場景打包、模型群組、UI 群組、互動物件集合、回憶事件區域，都適合用父容器整理。</p>
+          </div>
+        </div>
+
+        <h3 style="margin:20px 0 10px;font-size:17px;letter-spacing:-.015em">建立父子物件步驟</h3>
+        <div class="step-list">
+          <div class="step"><h3>建立空物件</h3><p>在 Hierarchy 點右鍵 → <code>Create Empty</code>，並改成容易辨識的名稱，例如 <code>Park_Group</code>。</p></div>
+          <div class="step"><h3>將物件拖入父容器</h3><p>選取要一起管理的物件，拖到空物件底下；縮排後代表已成為子物件。</p></div>
+          <div class="step"><h3>移動父物件測試</h3><p>選取父物件，用 <code>W</code> 移動。確認底下所有子物件都一起移動。</p></div>
+          <div class="step"><h3>整理位置與命名</h3><p>大型群組建議命名清楚，必要時記錄 Transform 數值，避免日後交接混亂。</p></div>
+        </div>
+
+        <h3 style="margin:22px 0 10px;font-size:17px;letter-spacing:-.015em">頂點吸附 V 鍵步驟</h3>
+        <div class="step-list">
+          <div class="step"><h3>選取要移動的物件</h3><p>在 Scene 或 Hierarchy 選取需要精準對齊的地板、牆面或模型。</p></div>
+          <div class="step"><h3>按住 V 鍵</h3><p>按住 V 不要放。滑鼠靠近模型頂點時，Unity 會進入頂點吸附操作。</p></div>
+          <div class="step"><h3>抓住來源頂點</h3><p>滑鼠移到物件角落或邊緣頂點，按住左鍵拖曳。</p></div>
+          <div class="step"><h3>拖到目標邊緣</h3><p>把來源頂點拖到另一個物件的邊緣或頂點，Unity 會自動吸附對齊。</p></div>
+        </div>
+
+        <div class="callout warning">
+          <h4>頂點吸附常見卡關</h4>
+          <p>如果 V 鍵吸不到點，通常是 Scene 視角太遠、模型頂點不明顯、選取物件錯誤或 Mesh 結構不適合吸附。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="debugging">
+      <div class="section-card" style="--index:4">
+        <div class="section-header">
+          <div>
+            <p class="kicker">Chapter 04</p>
+            <h2>腳本偵錯：命名禁忌、距離偵測與掛載</h2>
+            <p class="desc">Unity C# 新手最常踩的雷：腳本檔名與 class 名稱不一致，或腳本沒有掛到正確物件。</p>
+          </div>
+          <div class="section-meta">
+            <span class="pill">C Sharp Debugging</span>
+            <span class="reading-time">5 MIN READ</span>
+          </div>
+        </div>
+
+        <div class="callout danger">
+          <h4>腳本命名的絕對禁忌</h4>
+          <p>C# 腳本檔名必須與程式碼內 <code>public class</code> 名稱完全一致，包含大小寫。檔名是 <code>DistanceTrigger.cs</code>，class 就必須是 <code>DistanceTrigger</code>。</p>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="mini-card"><h3>錯誤現象</h3><p>Inspector 顯示 <strong>The associated script can not be loaded</strong>，或腳本欄位消失、無法掛載、無法進入 Play Mode。</p></div>
+          <div class="mini-card"><h3>處理順序</h3><p>先看 Console 第一個紅色錯誤，再檢查檔名、class 名稱、大括號、分號、拼字與大小寫。</p></div>
+        </div>
+
+        <div class="code-window">
+          <div class="code-header">
+            <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+            <div class="filename">DistanceTrigger.cs</div>
+            <div class="code-actions">
+              <span class="code-badge">C Sharp</span>
+              <button class="copy-btn" data-copy-target="code-distance">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+                <span>COPY</span>
+              </button>
+            </div>
+          </div>
+<pre id="code-distance"><code><span class="kw">using</span> <span class="type">UnityEngine</span>;
+
+<span class="kw">public</span> <span class="kw">class</span> <span class="type">DistanceTrigger</span> : <span class="type">MonoBehaviour</span>
+{
+    <span class="kw">public</span> <span class="type">Transform</span> player;
+    <span class="kw">public</span> <span class="type">GameObject</span> textCanvas;
+    <span class="kw">public</span> <span class="kw">float</span> triggerDistance = <span class="num">3.0f</span>;
+
+    <span class="kw">void</span> <span class="fn">Start</span>()
+    {
+        <span class="kw">if</span> (textCanvas != <span class="kw">null</span>)
+        {
+            textCanvas.<span class="fn">SetActive</span>(<span class="kw">false</span>);
+        }
+    }
+
+    <span class="kw">void</span> <span class="fn">Update</span>()
+    {
+        <span class="kw">if</span> (player == <span class="kw">null</span> || textCanvas == <span class="kw">null</span>)
+        {
+            <span class="kw">return</span>;
+        }
+
+        <span class="kw">float</span> dist = <span class="type">Vector3</span>.<span class="fn">Distance</span>(player.position, transform.position);
+        <span class="kw">bool</span> isNear = dist &lt;= triggerDistance;
+        textCanvas.<span class="fn">SetActive</span>(isNear);
+    }
+}</code></pre>
+        </div>
+
+        <div class="step-list">
+          <div class="step"><h3>建立腳本</h3><p>在 Project 視窗建立 <code>DistanceTrigger.cs</code>，確認檔名與 class 名稱完全一致。</p></div>
+          <div class="step"><h3>掛到觸發物件</h3><p>把腳本拖到觸發點物件，例如手鍊、照片、門口或提示區域。</p></div>
+          <div class="step"><h3>指定 Player</h3><p>在 Inspector 將玩家控制器或 Main Camera 的 Transform 拖到 <code>player</code> 欄位。</p></div>
+          <div class="step"><h3>指定文字 Canvas</h3><p>將要顯示的文字 Canvas 拖到 <code>textCanvas</code> 欄位，並調整 <code>triggerDistance</code>。</p></div>
+        </div>
+
+        <div class="callout tip">
+          <h4>偵錯小技巧</h4>
+          <p>使用 <code>Debug.Log("dist=" + dist)</code> 把距離印到 Console，可以快速確認玩家位置是否正確、距離數字是否如預期變化。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="physics">
+      <div class="section-card" style="--index:5">
+        <div class="section-header">
+          <div>
+            <p class="kicker">Chapter 05</p>
+            <h2>物理碰撞：Mesh Collider 與 Is Trigger</h2>
+            <p class="desc">玩家會穿牆，通常不是 VR 控制器壞掉，而是牆壁、地板或模型沒有正確設定 Collider。</p>
+          </div>
+          <div class="section-meta">
+            <span class="pill">Collider and Trigger</span>
+            <span class="reading-time">3 MIN READ</span>
+          </div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="mini-card">
+            <h3>Mesh Collider</h3>
+            <p>適合不規則模型，例如牆壁、地板、建築與大型場景模型。會依 Mesh 形狀建立碰撞範圍。</p>
+            <div class="tag-row"><span class="tag">牆壁</span><span class="tag">地板</span><span class="tag">大型模型</span></div>
+          </div>
+          <div class="mini-card">
+            <h3>Box Collider</h3>
+            <p>適合規則形狀，例如箱子、門、簡單牆面、看不見的阻擋區。效能通常比 Mesh Collider 好。</p>
+            <div class="tag-row"><span class="tag">箱體</span><span class="tag">簡單阻擋</span><span class="tag">隱形牆</span></div>
+          </div>
+        </div>
+
+        <div class="table-wrap" style="margin-top:14px">
+          <table>
+            <thead><tr><th>Is Trigger 狀態</th><th>效果</th><th>適合用途</th></tr></thead>
+            <tbody>
+              <tr><td><strong>未勾選</strong></td><td>具有實體阻擋效果，玩家或其他碰撞物會被擋住。</td><td>牆壁、地板、欄杆、桌子、不可穿越區域。</td></tr>
+              <tr><td><strong>已勾選</strong></td><td>變成感應區，不會阻擋玩家，但可以偵測進入或離開。</td><td>任務觸發區、提示區、傳送區、事件感應範圍。</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout danger">
+          <h4>穿牆問題快速檢查</h4>
+          <p>要阻擋玩家，Collider 必須存在，而且 <code>Is Trigger</code> 不能勾選。勾選後只會感應，不會阻擋。</p>
+        </div>
+
+        <div class="step-list">
+          <div class="step"><h3>選取牆壁或地板模型</h3><p>在 Hierarchy 或 Scene 選取玩家會穿過的模型。</p></div>
+          <div class="step"><h3>打開 Inspector</h3><p>確認物件目前是否已經有 Collider。如果沒有，按下 <code>Add Component</code>。</p></div>
+          <div class="step"><h3>新增 Mesh Collider</h3><p>搜尋 <code>Mesh Collider</code> 並加入。模型很複雜時，可改用多個 Box Collider 簡化碰撞。</p></div>
+          <div class="step"><h3>確認 Is Trigger</h3><p>要阻擋玩家就保持未勾選；要做感應區才勾選。</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="scenes">
+      <div class="section-card" style="--index:6">
+        <div class="section-header">
+          <div>
+            <p class="kicker">Chapter 06</p>
+            <h2>跨場景管理：DontDestroyOnLoad</h2>
+            <p class="desc">場景切換時，Unity 預設會清掉目前場景物件。若玩家控制器需要保留，就要使用 DontDestroyOnLoad。</p>
+          </div>
+          <div class="section-meta">
+            <span class="pill">Scene Persistence</span>
+            <span class="reading-time">3 MIN READ</span>
+          </div>
+        </div>
+
+        <div class="callout info">
+          <h4>典型情境</h4>
+          <p>從室內回憶切到戶外公園，如果 OVRPlayerController 被銷毀，玩家視角與控制器會消失。這時可把玩家物件設為跨場景保留。</p>
+        </div>
+
+        <div class="code-window">
+          <div class="code-header">
+            <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+            <div class="filename">KeepPlayer.cs</div>
+            <div class="code-actions">
+              <span class="code-badge">C Sharp</span>
+              <button class="copy-btn" data-copy-target="code-keep">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+                <span>COPY</span>
+              </button>
+            </div>
+          </div>
+<pre id="code-keep"><code><span class="kw">using</span> <span class="type">UnityEngine</span>;
+
+<span class="kw">public</span> <span class="kw">class</span> <span class="type">KeepPlayer</span> : <span class="type">MonoBehaviour</span>
+{
+    <span class="kw">private</span> <span class="kw">static</span> <span class="type">KeepPlayer</span> instance;
+
+    <span class="kw">void</span> <span class="fn">Awake</span>()
+    {
+        <span class="kw">if</span> (instance != <span class="kw">null</span> &amp;&amp; instance != <span class="kw">this</span>)
+        {
+            <span class="fn">Destroy</span>(gameObject);
+            <span class="kw">return</span>;
+        }
+
+        instance = <span class="kw">this</span>;
+        <span class="fn">DontDestroyOnLoad</span>(gameObject);
+    }
+}</code></pre>
+        </div>
+
+        <div class="step-list">
+          <div class="step"><h3>建立 KeepPlayer.cs</h3><p>在 Project 建立腳本，檔名與 class 名稱都使用 <code>KeepPlayer</code>。</p></div>
+          <div class="step"><h3>掛到玩家根物件</h3><p>把腳本掛到 OVRPlayerController、XR Origin 或玩家控制器的最上層父物件。</p></div>
+          <div class="step"><h3>避免重複玩家</h3><p>新場景如果也放了一個玩家，可能會出現兩個玩家。範例寫法會刪除重複物件。</p></div>
+          <div class="step"><h3>測試場景切換</h3><p>從場景 A 切到場景 B，確認玩家視角、控制器、位置與互動功能仍然正常。</p></div>
+        </div>
+
+        <div class="callout warning">
+          <h4>不要所有物件都保留</h4>
+          <p><code>DontDestroyOnLoad</code> 適合玩家、音樂、全域管理器。不適合用來保留每個場景模型，否則記憶體與物件管理會變混亂。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="xr">
+      <div class="section-card" style="--index:7">
+        <div class="section-header">
+          <div>
+            <p class="kicker">Chapter 07</p>
+            <h2>XR 設定：把專案變成真的 VR</h2>
+            <p class="desc">把一般 3D 專案變成 VR 專案的關鍵在 XR Plugin Management 與 XR Origin。本章整理常用步驟與目標平台對照。</p>
+          </div>
+          <div class="section-meta">
+            <span class="pill">XR and Build</span>
+            <span class="reading-time">4 MIN READ</span>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>目標裝置</th><th>建議 Loader</th><th>備註</th></tr></thead>
+            <tbody>
+              <tr><td>Meta Quest 2 / 3</td><td>Oculus / Meta XR</td><td>Build Target 切 Android，使用 Quest Link 或 APK 安裝。</td></tr>
+              <tr><td>SteamVR / Valve Index</td><td>OpenXR + SteamVR Plugin</td><td>Build Target 留在 Windows，OpenXR Runtime 設為 SteamVR。</td></tr>
+              <tr><td>HTC VIVE 系列</td><td>OpenXR / VIVE Wave</td><td>桌機接 PC 用 OpenXR；獨立機 VIVE Focus 用 Wave。</td></tr>
+              <tr><td>Pico 4 / Pico Neo</td><td>OpenXR + PICO Plugin</td><td>需安裝 PICO 官方 XR Plugin 套件。</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="step-list" style="margin-top:14px">
+          <div class="step"><h3>啟用 XR Plugin Management</h3><p>Edit → Project Settings → XR Plug-in Management，按 <code>Install</code>，再依目標平台勾選對應 Loader。</p></div>
+          <div class="step"><h3>安裝 XR Interaction Toolkit</h3><p>Window → Package Manager → Unity Registry，搜尋 <code>XR Interaction Toolkit</code> 並安裝。建議同時安裝 Samples 內的 Starter Assets。</p></div>
+          <div class="step"><h3>放入 XR Origin</h3><p>Hierarchy 右鍵 → XR → <code>XR Origin (VR)</code>。場景中原本的 Main Camera 可以刪除，避免兩個攝影機打架。</p></div>
+          <div class="step"><h3>設定移動方式</h3><p>常用 <code>Continuous Move</code> 連續移動或 <code>Teleportation</code> 傳送。VR 容易暈時優先用傳送加上 Vignette 視野收縮。</p></div>
+          <div class="step"><h3>第一次實機測試</h3><p>Quest 用 Link 線或 Air Link 連線；SteamVR 直接 Play。先測試視角是否正常、控制器是否有顯示、地板高度是否正確。</p></div>
+        </div>
+
+        <div class="callout warning">
+          <h4>VR 暈眩注意</h4>
+          <p>新手測試別連續玩超過 15 分鐘。畫面卡頓、加速度過快、頭部跟隨延遲都會放大暈眩。先確保穩定 72 / 90 FPS 再加入特效。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="github">
+      <div class="section-card" style="--index:8">
+        <div class="section-header">
+          <div>
+            <p class="kicker">Chapter 08</p>
+            <h2>GitHub SOP：雙重存檔、關閉 Unity、正確 Push</h2>
+            <p class="desc">團隊協作的重點是讓下一位同學打開專案不崩潰。Unity 專案上傳前要先存好場景與專案設定，並關閉 Unity。</p>
+          </div>
+          <div class="section-meta">
+            <span class="pill">Version Control</span>
+            <span class="reading-time">4 MIN READ</span>
+          </div>
+        </div>
+
+        <div class="step-list">
+          <div class="step"><h3>雙重存檔</h3><p>先按 <code>Ctrl + S</code> / <code>Cmd + S</code> 儲存目前 Scene，再點 <code>File &gt; Save Project</code> 儲存專案設定。</p></div>
+          <div class="step"><h3>關閉 Unity</h3><p>Push 前務必關閉 Unity。Unity 開著時可能鎖定暫存檔或產生大量 Library 變動。</p></div>
+          <div class="step"><h3>檢查 GitHub Desktop</h3><p>確認 Changes 裡出現的是你真的有改的檔案。若出現大量不明暫存檔，先停下檢查。</p></div>
+          <div class="step"><h3>填寫 Summary</h3><p>寫清楚本次修改，例如「新增手鍊文字提示」、「修復穿牆」、「加入戶外場景傳送」。</p></div>
+          <div class="step"><h3>Commit to main</h3><p>Commit 是把進度打包到本機歷史紀錄。Commit 後還沒有上雲端。</p></div>
+          <div class="step"><h3>Push origin</h3><p>Push 才是同步到 GitHub 雲端。Push 完後團隊其他人才能拉到最新進度。</p></div>
+        </div>
+
+        <div class="code-window">
+          <div class="code-header">
+            <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+            <div class="filename">.gitignore</div>
+            <div class="code-actions">
+              <span class="code-badge">Unity</span>
+              <button class="copy-btn" data-copy-target="code-gitignore">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+                <span>COPY</span>
+              </button>
+            </div>
+          </div>
+<pre id="code-gitignore"><code><span class="comment"># Unity generated folders</span>
+Library/
+Temp/
+Obj/
+Build/
+Builds/
+Logs/
+UserSettings/
+
+<span class="comment"># Visual Studio and Rider</span>
+.vs/
+.idea/
+*.csproj
+*.sln
+*.user
+
+<span class="comment"># Operating system files</span>
+.DS_Store
+Thumbs.db</code></pre>
+        </div>
+
+        <div class="callout warning">
+          <h4>Push 前檢查</h4>
+          <p>如果 GitHub Desktop 出現幾千個 Library 檔案，通常是 .gitignore 沒設好或 Unity 沒關。不要直接 Push，先修正再上傳。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="glossary">
+      <div class="section-card" style="--index:9">
+        <div class="section-header">
+          <div>
+            <p class="kicker">Chapter 09</p>
+            <h2>名詞速查</h2>
+            <p class="desc">把英文術語對照中文意思，閱讀官方文件或追蹤 Console 錯誤時不會卡住。</p>
+          </div>
+          <div class="section-meta">
+            <span class="pill">Glossary</span>
+            <span class="reading-time">2 MIN READ</span>
+          </div>
+        </div>
+        <div class="glossary">
+          <div><b>GameObject</b>場景中所有物件的基底：玩家、燈光、模型、空物件都是。</div>
+          <div><b>Component</b>掛在 GameObject 上的功能模組，例如 Transform、Collider、Script。</div>
+          <div><b>Prefab</b>預製物件範本。Hierarchy 出現藍色字代表來自 Prefab。</div>
+          <div><b>Transform</b>位置、旋轉、縮放三項基本屬性，每個 GameObject 都有。</div>
+          <div><b>Tag / Layer</b>用來分類物件，Tag 給程式比對用，Layer 給碰撞與相機篩選用。</div>
+          <div><b>Rigidbody</b>物理元件，啟用後物件會受重力與力量影響。</div>
+          <div><b>Collider</b>碰撞範圍。沒有 Collider 的物件不會被偵測或阻擋。</div>
+          <div><b>Trigger</b>感應型 Collider，不阻擋但會回呼 <code>OnTriggerEnter</code>。</div>
+          <div><b>Coroutine</b>可中斷的函式，常用 <code>yield return new WaitForSeconds(1f)</code>。</div>
+          <div><b>Scene</b>一個場景檔，存放當下這個畫面的所有物件配置。</div>
+          <div><b>XR Origin</b>VR 玩家根物件，包含相機與控制器，是 XR Toolkit 標配。</div>
+          <div><b>OpenXR</b>跨平台 XR 標準，Quest、SteamVR、PICO 大多支援。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="faq">
+      <div class="section-card" style="--index:10">
+        <div class="section-header">
+          <div>
+            <p class="kicker">Chapter 10</p>
+            <h2>FAQ 常見問題</h2>
+            <p class="desc">12 題 Unity VR 新手最容易遇到的狀況。遇到錯誤時，先看 Console，再對照這裡的處理方式。</p>
+          </div>
+          <div class="section-meta">
+            <span class="pill">Common Issues</span>
+            <span class="reading-time">5 MIN READ</span>
+          </div>
+        </div>
+
+        <div class="faq-list">
+          <details><summary>1. Inspector 顯示 The associated script can not be loaded 怎麼辦？</summary><div><p>先檢查 C# 腳本檔名是否與 <code>public class</code> 名稱完全一致（含大小寫），再看 Console 第一個紅色錯誤。常見原因：少分號、大括號錯誤、class 名稱打錯，或檔名改了但 class 沒改。</p></div></details>
+          <details><summary>2. 玩家為什麼會穿牆或掉出地板？</summary><div><p>通常是牆壁或地板沒有 Collider，或 Collider 的 <code>Is Trigger</code> 被勾選。要阻擋玩家請新增 Box Collider 或 Mesh Collider，並確認 Is Trigger 未勾選。</p></div></details>
+          <details><summary>3. Is Trigger 勾選與不勾選差在哪裡？</summary><div><p>不勾選時 Collider 會阻擋；勾選時變感應區，可偵測進入與離開但不阻擋。牆壁不要勾，任務觸發區才勾。</p></div></details>
+          <details><summary>4. 為什麼我靠近物件，文字沒有顯示？</summary><div><p>檢查距離偵測腳本是否掛在正確物件、<code>player</code> 欄位是否有指定玩家 Transform、<code>textCanvas</code> 是否有拖入、<code>triggerDistance</code> 是否太小，以及 Canvas 在場景中是否可見。</p></div></details>
+          <details><summary>5. V 鍵頂點吸附沒有反應怎麼辦？</summary><div><p>先確認有選取要移動的物件，按住 V 不要放，滑鼠靠近模型頂點再拖曳。如果模型頂點不明顯，放大 Scene 視角，或改用 Transform 數值手動對齊。</p></div></details>
+          <details><summary>6. 切換場景後玩家控制器不見了？</summary><div><p>玩家控制器需要跨場景保留時，請在玩家根物件掛上使用 <code>DontDestroyOnLoad(gameObject)</code> 的腳本。也要注意新場景不要再放第二個玩家。</p></div></details>
+          <details><summary>7. GitHub Push 前為什麼要關閉 Unity？</summary><div><p>Unity 開著可能鎖住暫存檔，或持續更新 Library、Temp、Logs，導致 GitHub Desktop 出現大量不該上傳的檔案。關閉 Unity 後再 Commit 與 Push 比較安全。</p></div></details>
+          <details><summary>8. Commit 跟 Push 有什麼不同？</summary><div><p>Commit 是把修改存到本機版本歷史；Push 才是上傳到 GitHub 雲端。只 Commit 不 Push，其他隊友看不到你的修改。</p></div></details>
+          <details><summary>9. 為什麼要 Save Scene 又要 Save Project？</summary><div><p><code>Ctrl + S</code> 主要儲存目前場景；<code>File &gt; Save Project</code> 儲存專案設定與資產狀態。團隊交接前建議兩個都做，降低漏存風險。</p></div></details>
+          <details><summary>10. Hierarchy 物件太多很亂怎麼整理？</summary><div><p>建立 Empty Object 當父容器，把同類型物件放在底下，例如 <code>Park_Group</code>、<code>UI_Group</code>、<code>Memory_Triggers</code>。命名清楚會讓後續偵錯與交接容易很多。</p></div></details>
+          <details><summary>11. 戴上 VR 後畫面是黑的或卡在 Splash？</summary><div><p>常見原因是 XR Plug-in Management 沒裝、Loader 沒勾、場景沒有 XR Origin 或仍存在多餘的 Main Camera。Build Target 與 OpenXR Runtime 也要對應目標裝置。</p></div></details>
+          <details><summary>12. VR 玩一下子就頭暈怎麼辦？</summary><div><p>先確保 FPS 穩定（Quest 至少 72，PCVR 建議 90 以上）。移動方式優先用 Teleportation；若用 Continuous Move 請加 Vignette 視野收縮。每次測試控制在 10–15 分鐘並適度休息。</p></div></details>
+        </div>
+
+        <div class="callout tip">
+          <h4>學習心態</h4>
+          <p>每一個紅色 Bug 都是變熟練的必經過程。遇到錯誤不要慌，先讀 Console，再拆成一個一個小問題處理。</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <strong>Unity VR 新手實戰手冊 · v2</strong>
+      從介面操作、快捷鍵、腳本偵錯、物理碰撞、XR 設定到 GitHub SOP，建立穩定可交接的 VR 開發流程。
+      <div class="meta">SINGLE PAGE · NO FRAMEWORK · OFFLINE READY</div>
+    </footer>
+  </main>
+
+  <div class="fab" id="fab">
+    <button id="topBtn" aria-label="回到頂端" title="回到頂端">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+    </button>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">已複製到剪貼簿</div>
+
+  <script>
+    (function(){
+      const $  = (s, r=document) => r.querySelector(s);
+      const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+
+      const navLinks = $$('.nav a');
+      const sections = navLinks.map(a => $(a.getAttribute('href'))).filter(Boolean);
+      const indicator = $('#navIndicator');
+      const sidebar = $('#sidebar');
+      const backdrop = $('#backdrop');
+      const menuBtn = $('#menuBtn');
+      const progressEl = $('#progress');
+      const readPercent = $('#readPercent');
+      const fab = $('#fab');
+      const topBtn = $('#topBtn');
+      const toast = $('#toast');
+      const searchInput = $('#searchInput');
+
+      function setActive(link){
+        navLinks.forEach(l => l.classList.toggle('active', l === link));
+        moveIndicator(link);
+      }
+
+      function moveIndicator(link){
+        if(!link || !indicator) return;
+        const rect = link.getBoundingClientRect();
+        const parentRect = link.parentElement.getBoundingClientRect();
+        const top = rect.top - parentRect.top;
+        indicator.style.opacity = '1';
+        indicator.style.height = rect.height + 'px';
+        indicator.style.transform = `translateY(${top}px)`;
+      }
+
+      // IntersectionObserver for active section
+      const io = new IntersectionObserver(entries => {
+        const visible = entries.filter(e => e.isIntersecting)
+          .sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if(!visible) return;
+        const link = navLinks.find(l => l.getAttribute('href') === '#' + visible.target.id);
+        if(link) setActive(link);
+      }, { rootMargin: '-20% 0px -60% 0px', threshold:[0.05,0.2,0.4,0.6] });
+      sections.forEach(s => io.observe(s));
+
+      // Initial indicator after layout
+      requestAnimationFrame(() => {
+        const active = $('.nav a.active') || navLinks[0];
+        moveIndicator(active);
+      });
+      window.addEventListener('resize', () => moveIndicator($('.nav a.active') || navLinks[0]));
+
+      // Click closes mobile menu
+      navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          setActive(link);
+          if(window.innerWidth <= 820){ closeSidebar(); }
+        });
+      });
+
+      // Mobile menu
+      function openSidebar(){ sidebar.classList.add('open'); backdrop.classList.add('open'); }
+      function closeSidebar(){ sidebar.classList.remove('open'); backdrop.classList.remove('open'); }
+      menuBtn?.addEventListener('click', () => sidebar.classList.contains('open') ? closeSidebar() : openSidebar());
+      backdrop?.addEventListener('click', closeSidebar);
+
+      // Scroll progress + FAB
+      function onScroll(){
+        const h = document.documentElement;
+        const max = h.scrollHeight - h.clientHeight;
+        const pct = max > 0 ? (h.scrollTop / max) * 100 : 0;
+        progressEl.style.width = pct + '%';
+        readPercent.textContent = Math.round(pct) + '%';
+        fab.classList.toggle('show', h.scrollTop > 480);
+      }
+      document.addEventListener('scroll', onScroll, { passive:true });
+      onScroll();
+
+      topBtn?.addEventListener('click', () => window.scrollTo({ top:0, behavior:'smooth' }));
+
+      // Copy buttons
+      $$('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const target = $('#' + btn.dataset.copyTarget);
+          if(!target) return;
+          try{
+            await navigator.clipboard.writeText(target.innerText);
+            btn.classList.add('ok');
+            const label = btn.querySelector('span');
+            const orig = label.textContent;
+            label.textContent = 'COPIED';
+            showToast('已複製到剪貼簿');
+            setTimeout(() => { btn.classList.remove('ok'); label.textContent = orig; }, 1600);
+          }catch(e){
+            showToast('複製失敗，請手動選取');
+          }
+        });
+      });
+
+      function showToast(msg){
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => toast.classList.remove('show'), 1700);
+      }
+
+      // Sidebar search filter
+      searchInput?.addEventListener('input', () => {
+        const q = searchInput.value.trim().toLowerCase();
+        navLinks.forEach(a => {
+          const txt = a.textContent.toLowerCase();
+          a.style.display = (!q || txt.includes(q)) ? '' : 'none';
+        });
+        // hide indicator while filtering
+        if(q) indicator.style.opacity = '0';
+        else moveIndicator($('.nav a.active') || navLinks[0]);
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        const tag = (e.target && e.target.tagName) || '';
+        const inField = /INPUT|TEXTAREA|SELECT/.test(tag) || (e.target && e.target.isContentEditable);
+        if(e.key === '/' && !inField){
+          e.preventDefault();
+          searchInput?.focus();
+          return;
+        }
+        if(e.key === 'Escape'){
+          if(sidebar.classList.contains('open')) closeSidebar();
+          if(document.activeElement === searchInput) searchInput.blur();
+        }
+        if(!inField && /^[0-9]$/.test(e.key)){
+          const idx = e.key === '0' ? 0 : parseInt(e.key, 10);
+          const target = navLinks[idx];
+          if(target){
+            e.preventDefault();
+            target.click();
+            const id = target.getAttribute('href');
+            const el = $(id);
+            if(el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+          }
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
